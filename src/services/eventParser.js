@@ -61,6 +61,8 @@ export const TrelloWebhookSchema = z.object({
  * @property {string} createdAt
  */
 
+const MAX_DESC_LENGTH = 500;
+
 /**
  * Validates and extracts a normalised event from a raw Trello webhook payload.
  *
@@ -95,7 +97,9 @@ export function parseEvent(raw) {
       actionType: action.type,
       cardId: card.id,
       cardName: card.name,
-      description: card.desc,
+      description: card.desc.length > MAX_DESC_LENGTH
+        ? card.desc.slice(0, MAX_DESC_LENGTH) + '\n…'
+        : card.desc,
       cardUrl: card.shortUrl ?? '',
       listBefore: listBefore?.id ?? null,
       listAfter: destinationList?.id ?? null,
