@@ -11,17 +11,21 @@ export const boardConfigs = [
       {
         projectId: "mokhigh-portfolio",
         triggerListId: "69d3ebc07495a8ef9836ba18",
+        finishedListId: "69d4012bd270e66eb921aec5",
       },
     ],
   },
 ];
 
 /**
- * Flat lookup: triggerListId → projectId
+ * Flat lookup: triggerListId → { projectId, finishedListId }
  * Built once at startup for O(1) routing.
  */
 export const listToProject = Object.fromEntries(
   boardConfigs.flatMap(({ projects }) =>
-    projects.map(({ triggerListId, projectId }) => [triggerListId, projectId])
+    projects.map(({ triggerListId, projectId, finishedListId }) => [
+      triggerListId,
+      { projectId, finishedListId },
+    ])
   )
 );

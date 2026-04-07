@@ -46,11 +46,13 @@ export async function handleWebhook(req, res) {
   }
 
   // 4. Route to project ---------------------------------------------------------
-  const projectId = resolveProject(event);
+  const projectConfig = resolveProject(event);
 
-  if (!projectId) {
+  if (!projectConfig) {
     return res.status(200).json({ status: 'ignored', reason: 'list_not_configured' });
   }
+
+  const { projectId, finishedListId } = projectConfig;
 
   // 5. Deduplicate --------------------------------------------------------------
   const duplicate = await isDuplicate(event.actionId);
@@ -60,7 +62,7 @@ export async function handleWebhook(req, res) {
   }
 
   // 6. Enqueue ------------------------------------------------------------------
-  await enqueueEvent(event, projectId, requestId);
+  await enqueueEvent(event, projectId, requestId, finishedListId);
 
   logger.info('Event accepted', {
     requestId,

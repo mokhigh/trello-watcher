@@ -9,7 +9,7 @@ import { logger } from '../utils/logger.js';
  * @param {string} requestId  — for end-to-end tracing
  * @returns {Promise<import('bullmq').Job>}
  */
-export async function enqueueEvent(event, projectId, requestId) {
+export async function enqueueEvent(event, projectId, requestId, finishedListId) {
   const job = {
     eventId: event.actionId,
     source: 'trello',
@@ -19,6 +19,7 @@ export async function enqueueEvent(event, projectId, requestId) {
     description: event.description,
     url: event.cardUrl,
     listName: event.listName,
+    finishedListId: finishedListId || null,
     createdAt: event.createdAt,
   };
 

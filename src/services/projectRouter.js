@@ -1,13 +1,11 @@
 import { listToProject } from '../config/projectMapping.js';
 
 /**
- * Resolves a parsed event's triggerListId to a projectId.
+ * Resolves a parsed event's triggerListId to its project config.
  *
  * @param {import('./eventParser.js').ParsedEvent} event
- * @returns {string | null} projectId, or null if the list is not configured
+ * @returns {{ projectId: string, finishedListId: string } | null}
  */
 export function resolveProject(event) {
-  const projectId = listToProject[event.triggerListId] ?? null;
-
-  return projectId;
+  return listToProject[event.triggerListId] ?? null;
 }
