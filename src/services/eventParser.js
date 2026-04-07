@@ -99,6 +99,7 @@ export function parseEvent(raw) {
       cardUrl: card.shortUrl ?? '',
       listBefore: listBefore?.id ?? null,
       listAfter: destinationList?.id ?? null,
+      listName: destinationList?.name ?? null,
       triggerListId: destinationList?.id ?? card.idList ?? null,
       createdAt: action.date ?? new Date().toISOString(),
     },

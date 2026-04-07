@@ -18,6 +18,7 @@ export async function enqueueEvent(event, projectId, requestId) {
     title: event.cardName,
     description: event.description,
     url: event.cardUrl,
+    listName: event.listName,
     createdAt: event.createdAt,
   };
 
