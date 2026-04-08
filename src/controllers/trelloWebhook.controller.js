@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { parseEvent, SUPPORTED_ACTIONS, isListPlacement } from '../services/eventParser.js';
-import { resolveProject } from '../services/projectRouter.js';
+import { resolveProjects } from '../services/projectRouter.js';
 import { isDuplicate } from '../services/dedupe.service.js';
 import { enqueueEvent } from '../services/queue.service.js';
 import { logger } from '../utils/logger.js';
@@ -45,14 +45,12 @@ export async function handleWebhook(req, res) {
     return res.status(200).json({ status: 'ignored', reason: 'not_a_list_placement' });
   }
 
-  // 4. Route to project ---------------------------------------------------------
-  const projectConfig = resolveProject(event);
+  // 4. Route to project(s) — fan-out to all matching targets ----------------
+  const projectConfigs = resolveProjects(event);
 
-  if (!projectConfig) {
+  if (projectConfigs.length === 0) {
     return res.status(200).json({ status: 'ignored', reason: 'list_not_configured' });
   }
-
-  const { projectId, finishedListId } = projectConfig;
 
   // 5. Deduplicate --------------------------------------------------------------
   const duplicate = await isDuplicate(event.actionId);
@@ -61,15 +59,19 @@ export async function handleWebhook(req, res) {
     return res.status(200).json({ status: 'ignored', reason: 'duplicate' });
   }
 
-  // 6. Enqueue ------------------------------------------------------------------
-  await enqueueEvent(event, projectId, requestId, finishedListId);
+  // 6. Enqueue for each target project ------------------------------------------
+  const enqueued = [];
+  for (const { projectId, finishedListId } of projectConfigs) {
+    await enqueueEvent(event, projectId, requestId, finishedListId);
+    enqueued.push(projectId);
+  }
 
   logger.info('Event accepted', {
     requestId,
     actionId: event.actionId,
-    projectId,
+    projectIds: enqueued,
     cardId: event.cardId,
   });
 
-  return res.status(202).json({ status: 'accepted', requestId });
+  return res.status(202).json({ status: 'accepted', requestId, projectIds: enqueued });
 }

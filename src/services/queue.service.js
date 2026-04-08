@@ -23,11 +23,14 @@ export async function enqueueEvent(event, projectId, requestId, finishedListId) 
     createdAt: event.createdAt,
   };
 
+  // Use composite jobId for fan-out: same actionId may enqueue for multiple projects
+  const jobId = `${event.actionId}_${projectId}`;
+
   const bullJob = await trelloEventsQueue.add(
     `${event.actionType}:${event.cardId}`,
     job,
     {
-      jobId: event.actionId, // idempotency at BullMQ level as well
+      jobId,
     }
   );
 
